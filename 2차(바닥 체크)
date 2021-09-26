@@ -1,0 +1,724 @@
+#include<iostream>
+#include<stdlib.h>
+#include<time.h>
+#include<conio.h>
+#include<Windows.h>
+#include<string.h>
+using namespace std;
+//현재 x 마지막 값 51, y 마지막 값 38
+
+//벽 x:3~34 / y:2~31
+//#define WIDTH  18
+//#define HEIGHT 30
+#define WIDTH  16 //게임판 가로
+#define HEIGHT 28 //게임판 세로
+#define COL  56 //콘솔창 가로
+#define LINE 40 //콘솔창 세로
+
+#define UP 72
+#define DOWN 80
+#define LEFT 75
+#define RIGHT 77
+
+#define LIMIT_Y 
+
+//제한 라인
+//밑바닥 라인
+int score = 0;
+int speed = 0;
+int nextBlock = rand() % 7 + 1; //미리 초기화 해둬야 함
+int nextRotation = rand() % 4;
+bool collide;
+//string tetris[HEIGHT][WIDTH];
+int tetris[HEIGHT][WIDTH];
+//rotation, i, j
+const int block1[4][4][4] = { // l
+	{
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0
+	},
+	{
+		0, 0, 0, 0,
+		1, 1, 1, 1,
+		0, 0, 0, 0,
+		0, 0, 0, 0
+	},
+	{
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 0, 0, 0
+	},
+	{
+		0, 0, 0, 0,
+		1, 1, 1, 1,
+		0, 0, 0, 0,
+		0, 0, 0, 0
+	}
+};
+const int block2[4][4][4] = { // ㅗ
+	{
+		0, 1, 0, 0,
+		1, 1, 1, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0
+	},
+	{
+		0, 1, 0, 0,
+		0, 1, 1, 0,
+		0, 1, 0, 0,
+		0, 0, 0, 0
+	},
+	{
+		0, 0, 0, 0,
+		1, 1, 1, 0,
+		0, 1, 0, 0,
+		0, 0, 0, 0
+	},
+	{
+		0, 1, 0, 0,
+		1, 1, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 0, 0
+	}
+};
+const int block3[4][4][4] = { // z
+	{
+		1, 1, 0, 0,
+		0, 1, 1, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0
+	},
+	{
+		0, 0, 1, 0,
+		0, 1, 1, 0,
+		0, 1, 0, 0,
+		0, 0, 0, 0
+	},
+	{
+		1, 1, 0, 0,
+		0, 1, 1, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0
+	},
+	{
+		0, 0, 1, 0,
+		0, 1, 1, 0,
+		0, 1, 0, 0,
+		0, 0, 0, 0
+	}
+};
+const int block4[4][4][4] = { // s
+	{
+		0, 1, 1, 0,
+		1, 1, 0, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0
+	},
+	{
+		0, 1, 0, 0,
+		0, 1, 1, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 0
+	},
+	{
+		0, 1, 1, 0,
+		1, 1, 0, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0
+	},
+	{
+		0, 1, 0, 0,
+		0, 1, 1, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 0
+	}
+};
+const int block5[4][4][4] ={  // L
+	{
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		1, 1, 0, 0,
+		0, 0, 0, 0
+	},
+	{
+		0, 0, 0, 0,
+		1, 1, 1, 0,
+		1, 0, 0, 0,
+		0, 0, 0, 0
+	},
+	{
+		1, 1, 0, 0,
+		0, 1, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 0, 0
+	},
+	{
+		0, 0, 1, 0,
+		1, 1, 1, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0
+	}
+};
+const int block6[4][4][4] = { // L의 반대
+	{
+		0, 1, 0, 0,
+		0, 1, 0, 0,
+		1, 1, 0, 0,
+		0, 0, 0, 0
+	},
+	{
+		1, 0, 0, 0,
+		1, 1, 1, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0
+	},
+	{
+		0, 1, 1, 0,
+		0, 1, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 0, 0
+	},
+	{
+		0, 0, 0, 0,
+		1, 1, 1, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 0
+	}
+};
+const int block7[4][4][4] = { // ㅁ
+	{
+		1, 1, 0, 0,
+		1, 1, 0, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0
+	},
+{
+		1, 1, 0, 0,
+		1, 1, 0, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0
+	},
+{
+		1, 1, 0, 0,
+		1, 1, 0, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0
+	},
+{
+		1, 1, 0, 0,
+		1, 1, 0, 0,
+		0, 0, 0, 0,
+		0, 0, 0, 0
+	}
+};
+//int map[WIDTH][HEIGHT]{ 0, };
+void GotoXY(int x, int y) {
+	COORD pos; //COORD : x, y값을 가지는 구조체 타입
+	pos.X = x; // x*2가 더 자연스럽게 이동함.
+	pos.Y = y;
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
+}
+POINT GetXY() {
+	POINT p;
+	GetCursorPos(&p);
+	return p;
+}
+int KeyInput() {
+	char key = _getch();
+	switch (toupper(key)) {
+		case 'W': return UP;
+		case 'S': return DOWN;
+		case 'A': return LEFT;
+		case 'D': return RIGHT;
+		case 13: return 13;
+		default: return -1;
+	}
+}
+class Block {
+public:
+	//POINT p;
+	int x, y, rotation, cnt; //x, y는 tetris 배열 내의 좌표라고 보는 것이 편함
+	Block() {}
+	Block(int rotation) {
+		//(초안)블록 중앙 생성::좌표
+		/*
+		x = 16, y = 2; //생성 위치 중앙으로 설정
+		GotoXY(x, y);
+		*/
+		x = WIDTH / 2 - 1;
+		y = 1;
+		this->rotation = rotation;
+		cnt = 0;
+		Draw();
+	}
+	virtual void Draw() { //임시로 block1거 가져옴
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				if (block1[GetRotation()][i][j] == 1 && tetris[y+i][x+j] == 0) tetris[y+i][x+j] = 1;
+			}
+		}
+		//(초안)블록 생성::직접 출력함
+		/*
+		for (int i = 0; i < 4; i++)
+		{
+			POINT p = GetXY(); //현재 위치를 얻기 위함
+			GotoXY(p.x, p.y);
+			for (int j = 0; j < 4; j++)
+			{
+				GotoXY(p.x, p.y++);
+				//if (block1[GetRotation()][i][j] == 1 && tetris[][]>0)cout << "■";
+				//else cout << "　";
+			}
+			GotoXY(x, ++y);
+		}
+		*/
+	}
+	void Remove() {
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				if (block1[GetRotation()][i][j] == 1 && tetris[y + i][x + j] == 1) tetris[y + i][x + j] = 0;
+			}
+		}
+	}
+	bool CheckCollide(int x, int y, int cnt) {
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				if (block1[cnt%4][i][j] == 1 && tetris[x+i][y+j] > 0) return false;
+			}
+		}
+		return true;
+	}
+	bool CheckFloor() {
+		int temp;
+		for (int i = 3; i >= 0; i--)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				if (block1[cnt % 4][i][j] == 1) {
+					temp = y+i;
+					goto endFor;
+				}
+			}
+		}
+		endFor:
+		if (temp == HEIGHT-2) return true;
+		else return false;
+		/*
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				if (block1[cnt % 4][i][j] == 1 && tetris[x+i][HEIGHT - 2]==1) return true;
+			}
+		}
+		return false;
+		*/
+	}
+	void Move() {
+		switch (KeyInput()) {
+			/*
+			case LEFT: 
+				if (CheckCollide(x - 1, y, cnt)) {
+					Remove(); x--;
+					Draw();
+				} break;
+			case RIGHT:
+				if (CheckCollide(x + 1, y, cnt)) {
+					Remove();
+					x++;
+					Draw();
+				} break;
+			case DOWN:
+				if (CheckCollide(x, y + 1, cnt)) {
+					Remove();
+					y++;
+					Draw();
+				} break;
+			case UP:
+				if (CheckCollide(x, y, cnt+1)) {
+					Remove();
+					cnt++;
+					Draw();
+				} break;
+				*/
+			case LEFT: Remove(); x--; Draw(); break;
+			case RIGHT: Remove(); x++; Draw(); break;
+			case DOWN: Remove(); y++; Draw(); break;
+			case UP: Remove(); cnt++; Draw(); break;
+		}
+	}
+	int GetRotation() {
+		rotation = cnt % 4;
+		return rotation;
+	}
+};
+class Block1 : public Block {
+public:
+	Block1(int rotation) : Block(rotation) {
+		Draw();
+	}
+	void Draw() {
+		for (int i = 0; i < 4; i++)
+		{
+			POINT p = GetXY(); //현재 위치를 얻기 위함
+			GotoXY(p.x, p.y);
+			for (int j = 0; j < 4; j++)
+			{
+				GotoXY(p.x, p.y++);
+				if (block1[GetRotation()][i][j] == 1) cout << "■";
+				else cout << "　";
+			}
+			GotoXY(x, ++y);
+		}
+	}
+};
+void DrawScore() {
+	GotoXY(38, 1);
+	cout << "┌──────────┐";
+	GotoXY(38, 2);
+	cout << "│   SCORE  │";
+	GotoXY(38, 3);
+	cout << "├──────────┤";
+	GotoXY(38, 4);
+	cout << "│          │";
+	GotoXY(38, 5);
+	cout << "└──────────┘";
+}
+void DrawNext() {
+	GotoXY(38, 7);
+	cout << "┌──────────┐";
+	GotoXY(38, 8);
+	cout << "│ NEXTBLOCK│";
+	GotoXY(38, 9);
+	cout << "├──────────┤";
+	GotoXY(38, 10);
+	cout << "│          │";
+	GotoXY(38, 11);
+	cout << "│          │";
+	GotoXY(38, 12);
+	cout << "│          │";
+	GotoXY(38, 13);
+	//cout << "│          │";
+	//GotoXY(38,14);
+	cout << "└──────────┘";
+}
+void DrawNextBlock(int num, int rotation) {
+	rotation = 0;
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			GotoXY(42 + j * 2, 10 + i);
+			if (block5[rotation][i][j] == 1) cout << "■";
+		}
+	}
+}
+void PrintScore() {
+	GotoXY(40, 4);
+	//cout << score;
+	printf("%9d", score);
+}
+void CheckRow() {
+	int count;
+	for (int i = HEIGHT - 2; i > 0; i--) //i
+	{ 
+		count = 0;
+		for (int j = 1; j < WIDTH - 1; j++) //j
+		{
+			if (tetris[i][j]==1) count++;
+		}
+		if (count == WIDTH - 2) //한 줄이 다 찼니?
+			score += 100; //점수 증가
+		for (int k = i; k > 1; k--) //k
+		{
+			for (int l = 0; l < WIDTH - 1; l++) //l
+			{
+				if (tetris[k - 1][l] != 2) tetris[k][l] = tetris[k - 1][l];
+			}
+		}
+	}
+}
+void DrawMap() {
+	for (int i = 0; i < HEIGHT; i++) { //출력
+		GotoXY(2, i + 1); //여백 주기 위함
+		for (int j = 0; j < WIDTH; j++) {
+			if (tetris[i][j] == 1)cout << "■";
+			else if (tetris[i][j] == 2)cout << "▩";
+			else cout << "　";
+		}
+		cout << endl;
+	}
+}
+void CreateBlock() {
+	int nowBlock = nextBlock;
+	int nowRotation = nextRotation;
+	nextBlock = rand() % 7 + 1;
+	nextRotation = rand() % 4;
+	DrawNextBlock(nextBlock, nextRotation);
+	//Block* block;
+	Block block(nowRotation);
+	
+	switch (1) {
+		case 1: Block1 block(nowRotation); break;
+	}
+	DrawMap();
+	while(true){
+		time_t start, finish;
+		start = time(NULL);
+
+		finish = time(NULL);
+		//if ((finish - start) % 1500 == 0)
+		block.Move();
+		DrawMap();
+		if (block.CheckFloor()==true) break; //참==바닥 -> 중지
+	}
+	//delete block;
+}
+void DrawPlay() {
+	system("cls");
+	//string 배열...
+	/*string tetris[HEIGHT][WIDTH];
+	for (int i = 0; i < HEIGHT; i++) { //할당
+		for (int j = 0; j < WIDTH; j++) {
+			if (i == 0 || i == HEIGHT - 1 || j == 0 || j == WIDTH - 1)
+				tetris[i][j] = "▩";
+			else tetris[i][j] = "　";
+		}
+		cout << endl;
+	}
+	*/
+	for (int i = 0; i < HEIGHT; i++) { //할당
+		for (int j = 0; j < WIDTH; j++) {
+			if (i == 0 || i == HEIGHT - 1 || j == 0 || j == WIDTH - 1)
+				tetris[i][j] = 2; //벽
+			else tetris[i][j] = 0; //공백
+		}
+	}
+	DrawMap();
+	//배열 1, 2차 시도... 큰일남...
+	/*
+	char ***tetris;
+	tetris = (char***)malloc(sizeof(char**) * 30);
+	for (int i = 0; i < 30; i++)
+	{
+		tetris[i] = (char**)malloc(sizeof(char*) * 30);
+	}
+	for (int i = 0; i < 30; i++)
+	{
+		for (int j = 0; j < 30; j++)
+		{
+			if (i == 25 && j > 8 && j < 21)tetris[i][j] = "▩";
+			else if (j == 9 && i > 4 && i < 26)tetris[i][j] = "▩";
+		}
+	}
+	*/
+	/*
+	char wall[WIDTH][HEIGHT];
+
+	for (int i = 0; i < WIDTH; i++)
+	{
+		for (int j = 0; j < HEIGHT; j++)
+		{
+			if (i == 0 || i == WIDTH - 1 || j == 0 || j == HEIGHT - 1)
+				wall[i][j] = 1;
+			else wall[i][j] = 0;
+		}
+	}
+	for (int i = 0; i < WIDTH; i++) {
+		GotoXY(2, i + 1); //여백 주기 위함
+		for (int j = 0; j < HEIGHT; j++) {
+			if(wall[i][j]==1) cout << "▩";
+			else cout << "　";
+		}
+		cout << endl;
+	}
+	*/
+	//초안(좌표 사용)
+	/*
+	for (int i = 0; i < HEIGHT; i++) {
+		GotoXY(2, i + 1); //여백 주기 위함
+		for (int j = 0; j < WIDTH; j++) {
+			if (i == 0 || i == HEIGHT - 1 || j == 0 || j == WIDTH - 1)
+				cout << "▩";
+			else cout << "　";
+		}
+		cout << endl;
+	}
+	*/
+	DrawScore();
+	DrawNext();
+	//임시
+	//Sleep(10000);
+}
+int ShowPlay() {
+	DrawPlay();
+	PrintScore();
+	CreateBlock();
+	//실행 while문
+	/*
+	bool _playing = true;
+	while (_playing) {
+		bool _block = true;
+		while(_block){
+			CreateBlock();
+			//Move();
+			time_t start, finish;
+			start = time(NULL);
+
+			finish = time(NULL);
+			//if(finish - start >= 1500)
+			//Down();
+		}
+		_playing = false;
+	}
+	*/
+	GotoXY(1, 35); //여백 주기 위함
+	cout << endl << "※메인 화면으로 돌아가려면 Backspace를 누르세요" << endl;
+	if (_getch() == 8) return 0;
+}
+int ShowRule() {
+	system("cls");
+	//임시
+	//방향키는 아예 게임 화면 옆에 있어도 괜찮을 듯
+	//수정 꼭 하자... 앞에 공백 주면 2번에서 문제 생김
+	cout << endl << "====================== 게임 규칙 ======================" << endl;
+	cout << "1. 7가지 모양의 블럭들을 쌓아갑니다." << endl;
+	cout << "2. 각 행이 블럭으로 채워질 때마다 해당 행은 사라지고\n   점수가 올라갑니다." << endl;
+	//cout << "   2-1. 콤보 이벤트 발생 시 더 많은 점수를 받을 수 있습니다." << endl;
+	cout << "3. 블럭이 제한 선까지 쌓이는 순간 게임이 종료됩니다." << endl;
+	cout << endl << endl << "======================== 방향키 ========================" << endl;
+	cout << "조작은 키보드 입력을 기준으로 합니다." << endl;
+	cout << "W : 블럭 회전(시계방향)\nA : 블럭 왼쪽으로 이동\nD : 블럭 오른쪽으로 이동\nS : 블럭 아래로 이동" << endl;
+	cout << endl << "※메인 화면으로 돌아가려면 Backspace를 누르세요" << endl;
+	if (_getch() == 8) return 0;
+	
+}
+int ShowRank() {
+	system("cls");
+	cout << endl << "======================== RANKING =======================" << endl;
+	cout << "랭킹 화면 - 파일 입출력" << endl;
+	cout << endl << "※메인 화면으로 돌아가려면 Backspace를 누르세요" << endl;
+	if (_getch() == 8) return 0;
+}
+int ShowMain() {
+	system("cls");
+	int selectKey = 0;
+	//제목
+	/*
+	GotoXY(1, 8);
+	cout << "■■■\n　■ \n　■\n　■\n　■";
+	GotoXY(10, 8);
+	cout << "■■■\n■\n■■■ \n■\n■■■";
+	//큰 T //cout << "■■■■■\n　　■ \n　　■\n　　■\n　　■\n　　■" << endl;
+	GotoXY(9, 8);
+	cout << "■■■\n　■ \n　■\n　■\n　■" << endl;
+	//cout << "■■■\n■　■\n■■■\n■　　■\n■　　■" << endl;
+	//cout << "■■■\n　■ \n　■\n　■\n■■■" << endl;
+	*/
+	GotoXY(24, 15);
+	cout << "C++ Tetris" << endl << endl; //제목 크게 만들기
+	GotoXY(13, 17);
+	cout << "UP : W | DOWN : S | SELECT : Enter";
+	
+	int x = 22, y = 21, _y = y;
+	//(초안)메뉴 출력
+	/*
+	GotoXY(x, y);
+	cout << "게임 시작";
+	GotoXY(x, y+1);
+	cout << "게임 방법";
+	GotoXY(x, y+2);
+	cout << "랭킹 보기";
+	GotoXY(x+2, y+3);
+	cout << "종료";
+	*/
+	GotoXY(x, y);
+	while (true) {
+		GotoXY(x, y);
+		cout << "  게임 시작";
+		GotoXY(x, y+1);
+		cout << "  게임 방법";
+		GotoXY(x, y+2);
+		cout << "  랭킹 보기";
+		GotoXY(x, y+3);
+		cout << "    종료";
+		GotoXY(x, _y);
+		cout << "> ";
+		//(초안)Enter키 입력 실행
+		/*
+		if (_getch() == 13) {
+			switch (y)
+			{
+			case 21: selectKey = 0; break;
+			case 22: selectKey = 1; break;
+			case 23: selectKey = 2; break;
+			case 24: selectKey = 3; break;
+			}
+			break;
+		}*/
+		int key = KeyInput();
+		switch (key)
+		{
+			case UP:
+				//if(GetCursorPos)
+				if(_y != 21)
+					GotoXY(x, --_y);
+				break;
+			case DOWN:
+				if (_y != 24)
+					GotoXY(x, ++_y);
+				break;
+			case 13: //Enter키 아스키코드 값
+				switch (_y)
+				{
+				case 21: selectKey = 0; break;
+				case 22: selectKey = 1; break;
+				case 23: selectKey = 2; break;
+				case 24: selectKey = 3; break;
+				}
+				 goto skip;
+			default: break;
+		}
+	}
+	//(초안)메뉴 선택
+	/*
+	int key;
+	cin >> key;
+	switch (key) {
+	case 1: system("cls"); DrawPlay(); break;
+	case 2: system("cls"); ShowRule(); break;
+	case 3: return 0;
+		return 0;
+	}*/
+	skip:
+	return selectKey;
+}
+int main() {
+	srand((unsigned)time(0));
+	system("mode con cols=56 lines=40"); // "~ | title 제목" 기능 왜 안먹지?
+	system("title C++ Tetris");
+	//ShowCursor(false); //커서 숨김 함수인데 먹히질 않음...
+
+	bool _while = true;
+	while (_while) {
+		int key = ShowMain();
+		switch (key) {
+		case 0: ShowPlay(); break;
+		case 1: ShowRule(); break;
+		case 2: ShowRank(); break;
+		case 3: _while = false; break;
+		}
+	}
+	GotoXY(0, 35);
+	system("pause");
+	return 0;
+}
