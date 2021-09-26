@@ -309,19 +309,9 @@ public:
 				}
 			}
 		}
-		endFor:
+	endFor:
 		if (temp == HEIGHT-2) return true;
 		else return false;
-		/*
-		for (int i = 0; i < 4; i++)
-		{
-			for (int j = 0; j < 4; j++)
-			{
-				if (block1[cnt % 4][i][j] == 1 && tetris[x+i][HEIGHT - 2]==1) return true;
-			}
-		}
-		return false;
-		*/
 	}
 	void Move() {
 		switch (KeyInput()) {
@@ -426,6 +416,12 @@ void PrintScore() {
 	GotoXY(40, 4);
 	//cout << score;
 	printf("%9d", score);
+}
+bool CheckOver() {
+	for (int j = 0; j < WIDTH; j++) {
+		if (tetris[1][j] == 1) return true;
+	}
+	return false;
 }
 void CheckRow() {
 	int count;
@@ -560,11 +556,13 @@ void DrawPlay() {
 	//Sleep(10000);
 }
 int ShowPlay() {
+	GotoXY(1, 35); //여백 주기 위함
+	cout << endl << "※메인 화면으로 돌아가려면 Backspace를 누르세요" << endl;
 	DrawPlay();
 	PrintScore();
 	CreateBlock();
 	//실행 while문
-	/*
+	
 	bool _playing = true;
 	while (_playing) {
 		bool _block = true;
@@ -578,11 +576,8 @@ int ShowPlay() {
 			//if(finish - start >= 1500)
 			//Down();
 		}
-		_playing = false;
+		_playing = !CheckOver();
 	}
-	*/
-	GotoXY(1, 35); //여백 주기 위함
-	cout << endl << "※메인 화면으로 돌아가려면 Backspace를 누르세요" << endl;
 	if (_getch() == 8) return 0;
 }
 int ShowRule() {
