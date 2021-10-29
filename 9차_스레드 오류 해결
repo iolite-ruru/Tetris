@@ -19,15 +19,17 @@ using namespace std;
 #define DOWN 80 
 #define LEFT 75 
 #define RIGHT 77 
-int score = 0;
-int speed = 1000;
+
 int nextBlock; //미리 선언 해둬야 함 
 int nextRotation;
 int tetris[HEIGHT][WIDTH];
 int tempTetris[HEIGHT][WIDTH] = { -1 };
 bool exe;
-int scoreUnit[] = { 800, 1500, 2100, 2600 };
-int speedUnit[] = { 1000, 900, 800, 600 };
+int scoreUnit[] = { 0, 100, 2100, 2600 };
+int speedUnit[] = { 1000, 500, 800, 600 };
+int unit = 0;
+int score = 0;
+int speed = speedUnit[unit];
 struct User {
 	int rank;
 	string name;
@@ -454,17 +456,11 @@ void PrintScore() {
 	//Sleep(500);
 	printf("%9d", score);
 }
-void CopyTetris() {
-	for (int i = 0; i < HEIGHT; i++) { //할당 
-		for (int j = 0; j < WIDTH; j++) {
-			tempTetris[i][j] = tetris[i][j];
-		}
-	}
-}
 void DrawMap() {
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
 	PrintScore();
 	int temp_x = 2;
-	for (int i = 0; i < HEIGHT; i++) { //출력 
+	for (int i = 0; i < HEIGHT; i++) { //출력
 		temp_x = 2;
 		GotoXY(temp_x, i + 1); //여백 주기 위함 
 		for (int j = 0; j < WIDTH; j++) {
@@ -480,7 +476,6 @@ void DrawMap() {
 		}
 		cout << endl;
 	}
-	CopyTetris();
 }
 bool CheckOver() {
 	for (int j = 1; j < WIDTH - 1; j++) {
@@ -510,22 +505,23 @@ bool CheckRow() {
 			DrawMap();
 		}
 	}
+	if (checkRow && unit < 3) {
+		if (score >= scoreUnit[unit + 1])
+			speed = speedUnit[unit++];
+	}
 	return checkRow;
 }
 Block* block;
 void BlockDownThread() {
 	while (exe) {
 		if ((block->CheckFloor()) == false) {
-			//CopyTetris();
 			Sleep(speed);
 			block->Down();
-			//DrawMap();
-			
 		}
 	}
-	//Sleep(1);
 }
 void CreateBlock() {
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 10);
 	srand((unsigned)time(0));
 	int nowBlock = nextBlock;
 	int nowRotation = nextRotation;
@@ -538,13 +534,7 @@ void CreateBlock() {
 	thread threadTest(BlockDownThread);
 	while (true) {
 		if (block->CheckFloor()) break; //참==바닥 -> 중지
-		//CopyTetris();
 		block->Move();
-
-		//block->RemoveBlock();
-		//block->Remove();
-		//block->Draw();
-		//block->DrawBlock();
 	}
 	exe = false;
 	threadTest.join();
@@ -577,7 +567,6 @@ int ShowPlay() {
 	DrawPlay();
 	PrintScore();
 	CreateBlock();
-	CopyTetris();
 	//실행 while문 
 	bool _playing = true;
 	while (_playing) {
@@ -585,18 +574,19 @@ int ShowPlay() {
 		bool _checkRow = true;
 		while (_block) {
 			Sleep(600);
-			//CreateBlock();
-			thread createBlock(CreateBlock);
+			CreateBlock();
+			//thread createBlock(CreateBlock);
 			_block = false;
-			createBlock.join();
+			//createBlock.join();
 		}
 		while (_checkRow) {
 			_checkRow = CheckRow();
 		}
 		_playing = CheckOver();
-	}
-	Sleep(800);
+	} //While End
+	Sleep(1000);
 	GotoXY(0, 31);
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
 	cout << "=======================================================" << endl;
 	cout << " 게임이 종료되었습니다." << endl;
 	cout << " 점수 : " << score << endl;
