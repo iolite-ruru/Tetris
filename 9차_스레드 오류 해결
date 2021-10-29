@@ -274,10 +274,43 @@ public:
 		{
 			for (int j = 0; j < 4; j++)
 			{
-				if (BLOCK[block][GetRotation()][i][j] == 1 && tetris[y + i][x + j] == 1) tetris[y + i][x + j] = 0;
+				if (BLOCK[block][GetRotation()][i][j] == 1 && tetris[y + i][x + j] == 1)
+					tetris[y + i][x + j] = 0;
 			}
 		}
 		//RemoveBlock();
+	}
+	void RemoveBlock() {
+		for (int i = 0; i < 4; i++) {
+			int x_temp = x, y_temp = y + i + 1; //T\ 내의 x, y좌표에 대해서
+			//GotoXY(x_temp * 2, y_temp + i);
+			for (int j = 0; j < 4; j++) {
+				if (BLOCK[block][cnt % 4][i][j] == 1 && tetris[y + i][x + j] == 1) {
+					GotoXY((x_temp + j) * 2 + 2, y_temp);
+					cout << "　";
+				}
+			}
+		}
+	}
+	void DrawBlock() {
+		//int x_temp = x+1, y_temp = y + 1;
+		for (int i = 0; i < 4; i++) {
+			int x_temp = x, y_temp = y + i + 1;
+			for (int j = 0; j < 4; j++) {
+				GotoXY((x_temp + j) * 2 + 2, y_temp);
+				if(tetris[y + i][x + j]==1 && BLOCK[block][GetRotation()][i][j] == 1) cout << "■";
+				//else if (tetris[y + i][x + j] == 0 && BLOCK[block][GetRotation()][i][j] == 0) cout << "　";
+			}
+		}
+	}
+	void Down() {
+		if ((this->CheckFloor()) == false) {
+			RemoveBlock();
+			Remove();
+			y++;
+			Draw();
+			DrawBlock();
+		}
 	}
 	bool CheckLeft(int x, int y, int cnt) {
 		for (int i = 0; i < 4; i++) //행
@@ -373,49 +406,7 @@ public:
 		rotation = cnt % 4;
 		return rotation;
 	}
-	void RemoveBlock() {
-		for (int i = 0; i < 4; i++) {
-			int x_temp = x, y_temp = y; //T\ 내의 x, y좌표에 대해서
-			//GotoXY(x_temp * 2, y_temp + i);
-			for (int j = 0; j < 4; j++) {
-				if (BLOCK[block][cnt % 4][i][j] == 1 && tetris[y + i][x + j] == 1) {
-					GotoXY(x_temp * 2, y_temp + i);
-					cout << "　";
-				}
-			}
-		}
-	}
-	void DrawBlock() {
-		//int x_temp = x+1, y_temp = y + 1;
-		for (int i = 0; i < 4; i++) {
-			int x_temp = x, y_temp = y + i + 1;
-			for (int j = 0; j < 4; j++) {
-				GotoXY((x_temp + j) * 2 + 2, y_temp);
-				if(tetris[y + i][x + j]==1 && BLOCK[block][GetRotation()][i][j] == 1) cout << "■";
-				//else if (tetris[y + i][x + j] == 0 && BLOCK[block][GetRotation()][i][j] == 0) cout << "　";
-				/*
-				switch (tetris[y+i][x+j]) {
-					case 1: cout << "■"; break;
-					case 2: cout << "▩"; break;
-					//case 0: cout << "　";
-				}
-				*/
-			}
-		}
-	}
-	void Down() {
-		if ((this->CheckFloor()) == false) {
-			RemoveBlock();
-			Remove();
-			y++;
-			Draw();
-			DrawBlock();
-		}
-	}
 };
-void Test() {
-	
-}
 void DrawScore() {
 	GotoXY(38, 1);
 	cout << "┌──────────┐";
